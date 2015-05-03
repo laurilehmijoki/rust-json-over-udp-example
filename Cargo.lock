@@ -1,0 +1,12 @@
+[root]
+name = "json_over_udp_example"
+version = "0.1.0"
+dependencies = [
+ "rustc-serialize 0.3.14 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "rustc-serialize"
+version = "0.3.14"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+
