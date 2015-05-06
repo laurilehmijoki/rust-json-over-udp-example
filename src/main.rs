@@ -5,7 +5,11 @@ use std::str;
 use std::string::String;
 
 fn main() {
-    let socket = UdpSocket::bind("127.0.0.1:34254").unwrap();
+    let remote_address = "127.0.0.1:34254";
+    let socket = match UdpSocket::bind(remote_address) {
+        Ok(socket) => socket,
+        Err(e) => panic!("Could not bind to {}: {}", remote_address, e)
+    };
 
     loop {
         let mut buf = [0; 1000];
