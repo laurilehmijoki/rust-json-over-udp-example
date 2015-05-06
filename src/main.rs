@@ -18,7 +18,13 @@ fn main() {
             Err(e) => panic!("Could not receive data {}", e)
         };
 
-        let response_str = response(&buf[..amount_read]);
+        let response_str = match response(&buf[..amount_read]) {
+            Ok(response_str) => response_str,
+            Err(e) => {
+                println!("Error in building response {}", e);
+                continue
+            }
+        };
         match socket.send_to(response_str.as_bytes(), &sender_address) {
             Ok(_) => {
                 println!("Sent message {}", response_str);
@@ -38,22 +44,38 @@ pub struct Message {
     content: String
 }
 
-fn decode_message(message_buf: &[u8]) -> Message {
-    let message_str = str::from_utf8(message_buf).unwrap();
-    let message: Message = json::decode(&message_str).unwrap();
-    message
-}
-
-fn response(message_buf: &[u8]) -> String {
-    let message = decode_message(message_buf);
-
-    println!("got message {}", json::encode(&message).unwrap());
+fn response(message_buf: &[u8]) -> Result<String, ErrorMessage> {
+    println!("got message {}", String::from_utf8_lossy(message_buf));
+    let message = match decode_message(message_buf) {
+        Ok(message) => message,
+        Err(error_message) => return Err(error_message)
+    };
 
     let response_message = Message {
         recipient: "you".to_string(),
         content: format!("greetings from {}", message.recipient)
     };
 
-    json::encode(&response_message).unwrap()
+    match json::encode(&response_message) {
+        Ok(json) => Ok(json),
+        Err(e) => Err(format!("Could not encode response: {}", e))
+    }
 }
 
+fn decode_message(message_buf: &[u8]) -> Result<Message, ErrorMessage> {
+    let message_str = match str::from_utf8(message_buf) {
+        Ok(utf8) => utf8,
+        Err(utf8_error) =>
+            return Err(format!("Message is not UTF8: {}", utf8_error))
+    };
+
+    let message: Message = match json::decode(&message_str) {
+        Ok(decoded) => decoded,
+        Err(decoder_error) =>
+            return Err(format!("Error in decoding json: {}", decoder_error))
+    };
+
+    Ok(message)
+}
+
+type ErrorMessage = String;
