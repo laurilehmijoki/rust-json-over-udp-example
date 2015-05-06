@@ -1,7 +1,5 @@
 # A JSON-over-UDP example in Rust
 
-This is just an exercise of a Rust newbie.
-
 ## Setup
 
 Install Rust and netcat
