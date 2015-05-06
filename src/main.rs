@@ -18,8 +18,7 @@ fn main() {
             Err(e) => panic!("Could not receive data {}", e)
         };
 
-        let buf = &mut buf[..amount_read];
-        let response_str = response(buf);
+        let response_str = response(&mut buf[..amount_read]);
         match socket.send_to(response_str.as_bytes(), &sender_address) {
             Ok(_) => {
                 println!("Sent message {}", response_str);
