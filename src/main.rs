@@ -13,7 +13,10 @@ fn main() {
 
     loop {
         let mut buf = [0; 1000];
-        let (amount_read, sender_address) = socket.recv_from(&mut buf).unwrap();
+        let (amount_read, sender_address) = match socket.recv_from(&mut buf) {
+            Ok(x) => x,
+            Err(e) => panic!("Could not receive data {}", e)
+        };
 
         let buf = &mut buf[..amount_read];
         let response_str = response(buf);
