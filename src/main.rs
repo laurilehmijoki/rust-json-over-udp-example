@@ -5,18 +5,23 @@ use std::str;
 use std::string::String;
 
 fn main() {
+    match main_loop() {
+        Err(e) => panic!(e),
+        _ => ()
+    }
+}
+
+fn main_loop() -> Result<(), ErrorMessage> {
     let remote_address = "127.0.0.1:34254";
-    let socket = match UdpSocket::bind(remote_address) {
-        Ok(socket) => socket,
-        Err(e) => panic!("Could not bind to {}: {}", remote_address, e)
-    };
+    let socket = try!(UdpSocket::bind(remote_address).map_err(|e| {
+        format!("Could not bind to {}: {}", remote_address, e)
+    }));
 
     loop {
         let mut buf = [0; 1000];
-        let (amount_read, sender_address) = match socket.recv_from(&mut buf) {
-            Ok(x) => x,
-            Err(e) => panic!("Could not receive data {}", e)
-        };
+        let (amount_read, sender_address) = try!(socket.recv_from(&mut buf).map_err(|e| {
+            format!("Could not receive data {}", e)
+        }));
 
         let response_str = match response(&buf[..amount_read]) {
             Ok(response_str) => response_str,
@@ -36,6 +41,7 @@ fn main() {
             }
         }
     }
+    Ok(())
 }
 
 #[derive(RustcDecodable, RustcEncodable, Debug)]
