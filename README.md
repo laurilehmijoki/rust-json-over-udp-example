@@ -12,8 +12,7 @@ Open the terminal and type:
 
 Then in another terminal type:
 
-    nc -u 127.0.0.1 34254 # nc is netcat
-    {"recipient":"lauri","content":"foo"}
+    echo -n '{"recipient":"lauri","content":"foo"}' | nc -u 127.0.0.1 34254 # nc is netcat
 
 After entering the above JSON string, press `enter`. That will send the JSON
 over the wire to our example program. Our example program will reply to you in
