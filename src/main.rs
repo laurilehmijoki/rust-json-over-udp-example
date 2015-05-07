@@ -46,36 +46,26 @@ pub struct Message {
 
 fn response(message_buf: &[u8]) -> Result<String, ErrorMessage> {
     println!("got message {}", String::from_utf8_lossy(message_buf));
-    let message = match decode_message(message_buf) {
-        Ok(message) => message,
-        Err(error_message) => return Err(error_message)
-    };
+    let message = try!(decode_message(message_buf));
 
     let response_message = Message {
         recipient: "you".to_string(),
         content: format!("greetings from {}", message.recipient)
     };
 
-    match json::encode(&response_message) {
-        Ok(json) => Ok(json),
-        Err(e) => Err(format!("Could not encode response: {}", e))
-    }
+    json::encode(&response_message).map_err(|e| {
+        format!("Could not encode response: {}", e)
+    })
 }
 
 fn decode_message(message_buf: &[u8]) -> Result<Message, ErrorMessage> {
-    let message_str = match str::from_utf8(message_buf) {
-        Ok(utf8) => utf8,
-        Err(utf8_error) =>
-            return Err(format!("Message is not UTF8: {}", utf8_error))
-    };
+    let message_str = try!(str::from_utf8(message_buf).map_err(|e| {
+        format!("Message is not UTF8: {}", e)
+    }));
 
-    let message: Message = match json::decode(&message_str) {
-        Ok(decoded) => decoded,
-        Err(decoder_error) =>
-            return Err(format!("Error in decoding json: {}", decoder_error))
-    };
-
-    Ok(message)
+    json::decode(&message_str).map_err(|e| {
+       format!("Error in decoding json: {}", e)
+    })
 }
 
 type ErrorMessage = String;
